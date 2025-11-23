@@ -45,7 +45,7 @@ jobs:
           sed -i "s|IMAGE_GATEWAY_TAG|${IMAGE_GATEWAY}:${{ github.sha }}|g" k3s/deployment-gateway.yaml
           sed -i "s|IMAGE_LLM_TAG|${IMAGE_LLM}:${{ github.sha }}|g" k3s/deployment-llm.yaml
 
-      - name: Apply Kubernetes Manifestss
+      - name: Apply Kubernetes Manifests
         uses: appleboy/ssh-action@v1.0.0
         with:
           host: ${{ secrets.SERVER_HOST }}
