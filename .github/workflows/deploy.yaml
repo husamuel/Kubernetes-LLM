@@ -1,0 +1,57 @@
+name: CI-CD Deploy
+
+on:
+  push:
+    branches: [ "main" ]
+
+env:
+  IMAGE_GATEWAY: ghcr.io/${{ github.repository_owner }}/gateway
+  IMAGE_LLM: ghcr.io/${{ github.repository_owner }}/llm
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Login to GHCR
+        run: |
+          echo "${{ secrets.GHCR_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+      - name: Build Gateway Image
+        run: docker build -t $IMAGE_GATEWAY:${{ github.sha }} ./gateway
+
+      - name: Build LLM Image
+        run: docker build -t $IMAGE_LLM:${{ github.sha }} ./llm
+
+      - name: Push Images
+        run: |
+          docker push $IMAGE_GATEWAY:${{ github.sha }}
+          docker push $IMAGE_LLM:${{ github.sha }}
+
+      - name: Copy k3s manifests to server
+        uses: appleboy/scp-action@v0.1.4
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          source: "k3s/"
+          target: "/home/husamuel/k3s/"
+
+      - name: Update image tags
+        run: |
+          sed -i "s|IMAGE_GATEWAY_TAG|${IMAGE_GATEWAY}:${{ github.sha }}|g" k3s/deployment-gateway.yaml
+          sed -i "s|IMAGE_LLM_TAG|${IMAGE_LLM}:${{ github.sha }}|g" k3s/deployment-llm.yaml
+
+      - name: Apply Kubernetes Manifests
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            kubectl apply -f /home/husamuel/k3s/
+            kubectl rollout restart deployment gateway
+            kubectl rollout restart deployment llm
