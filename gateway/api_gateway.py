@@ -4,7 +4,8 @@ from pydantic import BaseModel
 
 app = FastAPI(title="API Gateway")
 
-LLM_SERVICE_URL = 'http://0.0.0.0:8000/generate'
+LLM_SERVICE_URL = 'http://llm-service:8000/generate'
+STORAGE_SERVICE_URL = 'http://storage-service:7000/store'
 
 class Prompt(BaseModel):
     prompt: str
@@ -17,5 +18,14 @@ def health():
 async def generate(prompt: Prompt):
     async with httpx.AsyncClient(timeout=60.0) as client:
         resp = await client.post(LLM_SERVICE_URL, json={"prompt": prompt.prompt})
-        return resp.json()
+        data = resp.json()
 
+        try:
+            await client.post(STORAGE_SERVICE_URL, json={
+                "prompt": prompt.prompt,
+                "response": data.get("generated_text", "")
+            })
+        except Exception as e:
+            print("Error storing data:", e)
+
+        return data

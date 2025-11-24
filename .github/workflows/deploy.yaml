@@ -4,10 +4,6 @@ on:
   push:
     branches: [ "main" ]
 
-env:
-  IMAGE_GATEWAY: ghcr.io/${{ github.repository_owner }}/gateway
-  IMAGE_LLM: ghcr.io/${{ github.repository_owner }}/llm
-
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
@@ -21,15 +17,19 @@ jobs:
           echo "${{ secrets.GHCR_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
       - name: Build Gateway Image
-        run: docker build -t $IMAGE_GATEWAY:${{ github.sha }} ./gateway
+        run: docker build -t gateway:${{ github.sha }} ./gateway
 
       - name: Build LLM Image
-        run: docker build -t $IMAGE_LLM:${{ github.sha }} ./llm
+        run: docker build -t llm:${{ github.sha }} ./llm
+
+      - name: Build Storage Image
+        run: docker build -t storage:${{ github.sha }} ./storage
 
       - name: Push Images
         run: |
-          docker push $IMAGE_GATEWAY:${{ github.sha }}
-          docker push $IMAGE_LLM:${{ github.sha }}
+          docker push gateway:${{ github.sha }}
+          docker push llm:${{ github.sha }}
+          docker push storage:${{ github.sha }}
 
       - name: Copy k3s manifests to server
         uses: appleboy/scp-action@v0.1.4
@@ -42,8 +42,9 @@ jobs:
 
       - name: Update image tags
         run: |
-          sed -i "s|IMAGE_GATEWAY_TAG|${IMAGE_GATEWAY}:${{ github.sha }}|g" k3s/deployment-gateway.yaml
-          sed -i "s|IMAGE_LLM_TAG|${IMAGE_LLM}:${{ github.sha }}|g" k3s/deployment-llm.yaml
+          sed -i "s|IMAGE_GATEWAY_TAG|gateway:${{ github.sha }}|g" k3s/gateway/deployment.yaml
+          sed -i "s|IMAGE_LLM_TAG|llm:${{ github.sha }}|g" k3s/llm/deployment.yaml
+          sed -i "s|IMAGE_STORAGE_TAG|llm:${{ github.sha }}|g" k3s/storage/deployment.yaml
 
       - name: Apply Kubernetes Manifests
         uses: appleboy/ssh-action@v1.0.0
@@ -55,3 +56,4 @@ jobs:
             kubectl apply -f /home/husamuel/k3s/
             kubectl rollout restart deployment gateway
             kubectl rollout restart deployment llm
+            kubectl rollout restart deployment storage

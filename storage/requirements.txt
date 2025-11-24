@@ -1,0 +1,4 @@
+fastapi
+motor
+pydantic
+uvicorn[standard]

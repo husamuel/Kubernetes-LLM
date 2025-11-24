@@ -13,6 +13,4 @@ COPY api_gateway.py .
 
 RUN mkdir -p /app/cache
 
-EXPOSE 8000
-
-CMD ["uvicorn", "llm_service:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "api_gateway:app", "--host", "0.0.0.0", "--port", "9000"]
