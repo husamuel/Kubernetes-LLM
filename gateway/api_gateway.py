@@ -20,12 +20,4 @@ async def generate(prompt: Prompt):
         resp = await client.post(LLM_SERVICE_URL, json={"prompt": prompt.prompt})
         data = resp.json()
 
-        try:
-            await client.post(STORAGE_SERVICE_URL, json={
-                "prompt": prompt.prompt,
-                "response": data.get("generated_text", "")
-            })
-        except Exception as e:
-            print("Error storing data:", e)
-
         return data
