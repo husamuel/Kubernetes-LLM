@@ -32,8 +32,8 @@ jobs:
 
       - name: Push Gateway Image
         run: |
-          docker tag gateway_image:latest $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/my-app:latest
-          docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/my-app:latest
+          docker tag gateway_image:latest $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/my-repo:latest
+          docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/my-repo:latest
 
 
       - name: Build LLM Image
@@ -41,54 +41,54 @@ jobs:
 
       - name: Push LLM Image
         run: |
-          docker tag llm_image:latest $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/my-app:latest
-          docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/my-app:latest
+          docker tag llm_image:latest $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/my-repo:latest
+          docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/my-repo:latest
 
       - name: Build Storage Image
         run: docker build -t storage_image ./storage
 
       - name: Push Storage Image
         run: |
-          docker tag storage_image:latest $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/my-app:latest
-          docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/my-app:latest
+          docker tag storage_image:latest $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/my-repo:latest
+          docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/my-repo:latest
 
       - name: Trivy Scan Gateway
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: ${{ env.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/my-app:latest
+          image-ref: ${{ env.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/my-repo:latest
           severity: HIGH,CRITICAL
           exit-code: '1'
 
       - name: Trivy Scan LLM
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: ${{ env.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/my-app:latest
+          image-ref: ${{ env.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/my-repo:latest
           severity: HIGH,CRITICAL
           exit-code: '1'
 
       - name: Trivy Scan Storage
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: ${{ env.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/my-app:latest
+          image-ref: ${{ env.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/my-repo:latest
           severity: HIGH,CRITICAL
           exit-code: '1'
 
       - name: Generate SBOM - Gateway
         uses: anchore/sbom-action@v0
         with:
-          image: ${{ env.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/my-app:latest
+          image: ${{ env.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/my-repo:latest
           output-file: gateway_sbom.json
 
       - name: Generate SBOM - LLM
         uses: anchore/sbom-action@v0
         with:
-          image: ${{ env.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/my-app:latest
+          image: ${{ env.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/my-repo:latest
           output-file: llm_sbom.json
 
       - name: Generate SBOM - Storage
         uses: anchore/sbom-action@v0
         with:
-          image: ${{ env.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/my-app:latest
+          image: ${{ env.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/my-repo:latest
           output-file: storage_sbom.json
 
       - name: Upload SBOMs to S3
