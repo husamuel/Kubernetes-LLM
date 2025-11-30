@@ -72,6 +72,7 @@ jobs:
           image-ref: ${{ env.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/my-repo:latest
           severity: HIGH,CRITICAL
           exit-code: '1'
+          artifact-name: gateway-sbom<
 
       - name: Generate SBOM - Gateway
         uses: anchore/sbom-action@v0
@@ -84,12 +85,14 @@ jobs:
         with:
           image: ${{ env.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/my-repo:latest
           output-file: llm_sbom.json
+          artifact-name: llm-sbom
 
       - name: Generate SBOM - Storage
         uses: anchore/sbom-action@v0
         with:
           image: ${{ env.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/my-repo:latest
           output-file: storage_sbom.json
+          artifact-name: storage-sbom
 
       - name: Upload SBOMs to S3
         run: |
