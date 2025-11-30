@@ -73,19 +73,19 @@ jobs:
           exit-code: '1'
 
       - name: Generate SBOM - Gateway
-        uses: anchore/syft-action@v0
+        uses: anchore/sbom-action@v0
         with:
           image: ${{ env.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/gateway_image:latest
           output-file: gateway_sbom.json
 
       - name: Generate SBOM - LLM
-        uses: anchore/syft-action@v0
+        uses: anchore/sbom-action@v0
         with:
           image: ${{ env.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/llm_image:latest
           output-file: llm_sbom.json
 
       - name: Generate SBOM - Storage
-        uses: anchore/syft-action@v0
+        uses: anchore/sbom-action@v0
         with:
           image: ${{ env.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/storage_image:latest
           output-file: storage_sbom.json
