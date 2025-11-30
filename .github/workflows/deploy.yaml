@@ -8,52 +8,90 @@ jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
 
+    env:
+      AWS_REGION: us-east-1
+      AWS_ACCOUNT_ID: 539358810919
+      S3_SBOM_BUCKET: sbom-storage-bucket
+
     steps:
-      - name: Checkout
+      - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Login to GHCR
-        run: |
-          echo "${{ secrets.GHCR_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        uses: aws-actions/amazon-ecr-login@v2
 
       - name: Build Gateway Image
-        run: docker build -t gateway:${{ github.sha }} ./gateway
+        run: docker build -t gateway_image ./gateway
+
+      - name: Push Gateway Image
+        run: |
+          docker tag gateway_image:latest $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/gateway_image:latest
+          docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/gateway_image:latest
 
       - name: Build LLM Image
-        run: docker build -t llm:${{ github.sha }} ./llm
+        run: docker build -t llm_image ./llm
+
+      - name: Push LLM Image
+        run: |
+          docker tag llm_image:latest $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/llm_image:latest
+          docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/llm_image:latest
 
       - name: Build Storage Image
-        run: docker build -t storage:${{ github.sha }} ./storage
+        run: docker build -t storage_image ./storage
 
-      - name: Push Images
+      - name: Push Storage Image
         run: |
-          docker push gateway:${{ github.sha }}
-          docker push llm:${{ github.sha }}
-          docker push storage:${{ github.sha }}
+          docker tag storage_image:latest $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/storage_image:latest
+          docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/storage_image:latest
 
-      - name: Copy k3s manifests to server
-        uses: appleboy/scp-action@v0.1.4
+      - name: Trivy Scan Gateway
+        uses: aquasecurity/trivy-action@master
         with:
-          host: ${{ secrets.SERVER_HOST }}
-          username: ${{ secrets.SERVER_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          source: "k3s/"
-          target: "/home/husamuel/k3s/"
+          image-ref: ${{ env.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/gateway_image:latest
+          severity: HIGH,CRITICAL
+          exit-code: '1'
 
-      - name: Update image tags
+      - name: Trivy Scan LLM
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ${{ env.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/llm_image:latest
+          severity: HIGH,CRITICAL
+          exit-code: '1'
+
+      - name: Trivy Scan Storage
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ${{ env.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/storage_image:latest
+          severity: HIGH,CRITICAL
+          exit-code: '1'
+
+      - name: Generate SBOM - Gateway
+        uses: anchore/syft-action@v0.15.0
+        with:
+          image: ${{ env.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/gateway_image:latest
+          output-file: gateway_sbom.json
+
+      - name: Generate SBOM - LLM
+        uses: anchore/syft-action@v0.15.0
+        with:
+          image: ${{ env.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/llm_image:latest
+          output-file: llm_sbom.json
+
+      - name: Generate SBOM - Storage
+        uses: anchore/syft-action@v0.15.0
+        with:
+          image: ${{ env.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/storage_image:latest
+          output-file: storage_sbom.json
+
+      - name: Upload SBOMs to S3
         run: |
-          sed -i "s|IMAGE_GATEWAY_TAG|gateway:${{ github.sha }}|g" k3s/gateway/deployment.yaml
-          sed -i "s|IMAGE_LLM_TAG|llm:${{ github.sha }}|g" k3s/llm/deployment.yaml
-          sed -i "s|IMAGE_STORAGE_TAG|llm:${{ github.sha }}|g" k3s/storage/deployment.yaml
-
-      - name: Apply Kubernetes Manifests
-        uses: appleboy/ssh-action@v1.0.0
-        with:
-          host: ${{ secrets.SERVER_HOST }}
-          username: ${{ secrets.SERVER_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          script: |
-            kubectl apply -f /home/husamuel/k3s/
-            kubectl rollout restart deployment gateway
-            kubectl rollout restart deployment llm
-            kubectl rollout restart deployment storage
+          aws s3 cp gateway_sbom.json s3://$S3_SBOM_BUCKET/sbom/gateway_sbom.json
+          aws s3 cp llm_sbom.json s3://$S3_SBOM_BUCKET/sbom/llm_sbom.json
+          aws s3 cp storage_sbom.json s3://$S3_SBOM_BUCKET/sbom/storage_sbom.json
