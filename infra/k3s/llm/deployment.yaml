@@ -13,8 +13,11 @@ spec:
       labels:
         app: llm
     spec:
+      imagePullSecrets:
+        - name: ecr-registry-secret
       containers:
         - name: llm
-          image: IMAGE_LLM_TAG
+          image: 539358810919.dkr.ecr.us-east-1.amazonaws.com/llm:latest
           ports:
             - containerPort: 8000
+
