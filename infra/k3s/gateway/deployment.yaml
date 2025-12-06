@@ -71,7 +71,7 @@ metadata:
 spec:
   tls:
     - hosts:
-        - llm.example.com
+        - llm.local
       secretName: llm-tls
   rules:
     - host: llm.local
