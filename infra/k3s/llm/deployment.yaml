@@ -18,6 +18,21 @@ spec:
       containers:
         - name: llm
           image: 539358810919.dkr.ecr.us-east-1.amazonaws.com/llm:latest
+          imagePullPolicy: Always
           ports:
             - containerPort: 8000
 
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: llm-service
+  namespace: llm
+spec:
+  type: ClusterIP
+  selector:
+    app: llm
+  ports:
+    - protocol: TCP
+      port: 8000
+      targetPort: 8000

@@ -71,7 +71,7 @@ jobs:
           image-ref: ${{ env.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/storage:latest
           severity: HIGH,CRITICAL
           exit-code: '1'
-          artifact-name: gateway-sbom<
+          artifact-name: gateway-sbom
 
       - name: Generate SBOM - Gateway
         uses: anchore/sbom-action@v0
