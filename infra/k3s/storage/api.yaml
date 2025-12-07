@@ -14,13 +14,20 @@ spec:
         app: storage
     spec:
       imagePullSecrets:
-        - name: ecr-registry-secret
+        - name: ecr-secret
       containers:
         - name: storage
           image: 539358810919.dkr.ecr.us-east-1.amazonaws.com/storage:latest
           imagePullPolicy: Always
           ports:
             - containerPort: 7000
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "512Mi"
+            limits:
+              cpu: "1"
+              memory: "1Gi"
 
 ---
 apiVersion: v1
@@ -36,3 +43,24 @@ spec:
     - protocol: TCP
       port: 7000
       targetPort: 7000
+
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: storage-hpa
+  namespace: storage
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: storage
+  minReplicas: 1
+  maxReplicas: 10
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 50
