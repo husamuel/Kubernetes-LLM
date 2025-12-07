@@ -17,6 +17,12 @@ jobs:
       - name: Checkout code3
         uses: actions/checkout@v3
 
+      - name: Runner cleaning
+        run: |
+          docker system prune -af
+          docker volume prune -f
+          rm -rf /tmp/*
+
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
