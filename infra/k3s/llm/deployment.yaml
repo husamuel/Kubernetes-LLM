@@ -14,7 +14,7 @@ spec:
         app: llm
     spec:
       imagePullSecrets:
-        - name: ecr-registry-secret
+        - name: ecr-secret
       containers:
         - name: llm
           image: 539358810919.dkr.ecr.us-east-1.amazonaws.com/llm:latest
