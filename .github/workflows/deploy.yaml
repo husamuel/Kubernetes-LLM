@@ -17,12 +17,6 @@ jobs:
       - name: Checkout code3
         uses: actions/checkout@v3
 
-      - name: Runner cleaning
-        run: |
-          docker system prune -af
-          docker volume prune -f
-          rm -rf /tmp/*
-
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
@@ -40,6 +34,7 @@ jobs:
         run: |
           docker tag gateway_image:latest $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/gateway:latest
           docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/gateway:latest
+          docker rmi gateway_image
 
       - name: Build LLM Image
         run: docker build -t llm_image ./llm
@@ -48,6 +43,7 @@ jobs:
         run: |
           docker tag llm_image:latest $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/llm:latest
           docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/llm:latest
+          docker rmi llm_image
 
       - name: Build Storage Image
         run: docker build -t storage_image ./storage
@@ -56,6 +52,7 @@ jobs:
         run: |
           docker tag storage_image:latest $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/storage:latest
           docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/storage:latest
+          docker rmi storage_image
 
       - name: Trivy Scan Gateway
         uses: aquasecurity/trivy-action@master
