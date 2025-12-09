@@ -23,3 +23,5 @@ The project features an automated CI/CD pipeline that builds images on every pus
 #6 monitoramento do cluster com prometheus e grafana
 
 #7 Assinatura de imagens com COSIGN
+
+O AWS ECR só permite pull de imagens privadas usando tokens temporários de 12h como estou a usar o k3s não consigo fazer um iam role para o meu cluster então criei um cronjob que atualiza o token de 10 em 10h apartir do aws cli 
