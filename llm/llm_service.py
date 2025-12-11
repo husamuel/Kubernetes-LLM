@@ -40,10 +40,10 @@ async def generate(prompt: Prompt):
 
     try:
         async with httpx.AsyncClient() as client:
-        await client.post(STORAGE_SERVICE_URL, json={
-            "prompt": prompt.prompt,
-            "response": result[0]["generated_text"]
-        })
+            await client.post(STORAGE_SERVICE_URL, json={
+                "prompt": prompt.prompt,
+                "response": result[0]["generated_text"]
+            })
     except Exception as e:
         print("Error storing data:", e)
 
