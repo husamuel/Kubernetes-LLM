@@ -1,27 +1,262 @@
-# LLM Kubernetes Infrastructure
+# 🤖 LLM Kubernetes Infrastructure
 
-Microservices infrastructure for serving LLMs with API Gateway, request processing, automatic MongoDB storage, and complete CI/CD pipeline. All running on Kubernetes in AWS with Terraform.
+A production-ready microservices infrastructure for serving Large Language Models with automated CI/CD, security scanning, and comprehensive monitoring. Built with Kubernetes, AWS, and modern DevOps practices.
 
-## Description
+[![Kubernetes](https://img.shields.io/badge/Kubernetes-326CE5?style=for-the-badge&logo=kubernetes&logoColor=white)](https://kubernetes.io/)
+[![AWS](https://img.shields.io/badge/AWS-FF9900?style=for-the-badge&logo=amazon-aws&logoColor=white)](https://aws.amazon.com/)
+[![Terraform](https://img.shields.io/badge/Terraform-7B42BC?style=for-the-badge&logo=terraform&logoColor=white)](https://www.terraform.io/)
+[![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://www.docker.com/)
+[![ArgoCD](https://img.shields.io/badge/ArgoCD-EF7B4D?style=for-the-badge&logo=argo&logoColor=white)](https://argoproj.github.io/cd/)
 
-This project implements a complete and scalable infrastructure for serving a Large Language Model using microservices architecture. The flow works like this: an API Gateway receives client requests and forwards them to the LLM service that processes and generates responses. When the response goes back to the client, simultaneously a storage service saves the entire interaction in MongoDB for history and analysis.
+---
 
-The infrastructure runs on Kubernetes managed by EKS Anywhere, with all services containerized in Docker. The cloud infrastructure was fully provisioned on AWS using Terraform, including VPC for network isolation, S3 for storing security scan results, and ECR as a private image registry.
+## 📋 Table of Contents
 
-The project features an automated CI/CD pipeline that builds images on every push, runs integration tests, performs vulnerability scans, and automatically pushes approved images to ECR. Everything designed to be scalable, secure, and easy to maintain.
+- [Overview](#overview)
+- [Architecture](#architecture)
+- [Tech Stack](#tech-stack)
+- [How I Built This](#how-i-built-this)
+- [Features](#features)
+- [Getting Started](#getting-started)
+- [Screenshots](#screenshots)
 
-#1 Criei a aplicação com python usei a bilbitoeca fastAPI para o llm usei o modelo gpt2-medium criei o seviço que vai enviar os dados para a DB e cria la configuerei os docker files e testei localmente para assegurar que estava tudo bem
+---
 
-#2 Criei os meus serviços na aws usando terraform criei o ECR para armazenas as imagens da minha aplicação e o S3 para guardar os SBOM e VPC e IAM
+## 🎯 Overview
 
-#3 Criei pipeline com github actions que conecta à minha conta aws, dá build push scan com trivy das imagens e gera SBOM que envia para o S3
+This project implements a complete infrastructure for serving Large Language Models using microservices. The system handles LLM inference requests through an API Gateway, processes them with GPT-2 Medium, and automatically stores all interactions in MongoDB.
 
-#4 Configurei o AegoCD para ouvir o meu repositorio e atualizar o meu cluster à medida que ia construindo
+**The Flow:**
+1. Client sends request to API Gateway
+2. Gateway forwards to LLM Service (GPT-2 Medium)
+3. LLM generates response
+4. Response goes back to client + Storage Service saves everything to MongoDB
 
-#5 Criação dos deploymets dos serviços namespaces, ingress, clusterip, secrets
+Everything runs on Kubernetes (K3s), with full CI/CD automation, security scanning, and monitoring.
 
-#6 monitoramento do cluster com prometheus e grafana
+---
 
-#7 Assinatura de imagens com COSIGN
+## 🏗️ Architecture
 
-O AWS ECR só permite pull de imagens privadas usando tokens temporários de 12h como estou a usar o k3s não consigo fazer um iam role para o meu cluster então criei um cronjob que atualiza o token de 10 em 10h apartir do aws cli 
+```
+Client Request
+      ↓
+┌─────────────┐
+│ API Gateway │ (FastAPI)
+└──────┬──────┘
+       ↓
+┌─────────────┐
+│ LLM Service │ (GPT-2 Medium)
+└──────┬──────┘
+       ↓
+   Response → Client
+       +
+   Storage Service → MongoDB
+```
+---
+
+## 🛠️ Tech Stack
+
+**Application:**
+- FastAPI (Python) - API Gateway
+- GPT-2 Medium - Language Model
+- MongoDB - Database
+
+**Infrastructure:**
+- Kubernetes (K3s)
+- AWS (ECR, S3, VPC, IAM)
+- Terraform - Infrastructure as Code
+- Docker - Containerization
+
+**CI/CD & Security:**
+- GitHub Actions - CI/CD Pipeline
+- ArgoCD - GitOps Deployment
+- Trivy - Vulnerability Scanning
+- Cosign - Image Signing
+
+**Monitoring:**
+- Prometheus - Metrics
+- Grafana - Dashboards
+
+---
+
+## 🚀 How I Built This
+
+### Step 1: Built the Application 🐍
+
+Created three microservices with FastAPI and containerized everything:
+
+- **API Gateway**: Receives requests and routes them
+- **LLM Service**: Runs GPT-2 Medium for text generation
+- **Storage Service**: Saves conversations to MongoDB
+
+Tested everything locally with docker-compose to make sure it worked before moving to the cloud.
+
+---
+
+### Step 2: AWS Infrastructure with Terraform ☁️
+
+Used Terraform to provision everything on AWS:
+
+- **ECR**: Private registry to store my Docker images
+- **S3**: Bucket for security scan reports and SBOM files
+- **VPC**: Isolated network for security
+- **IAM**: Roles and policies for secure access
+
+All infrastructure is code - just run `terraform apply` and everything gets created.
+
+---
+
+### Step 3: CI/CD Pipeline 🔄
+
+Set up GitHub Actions to automate everything:
+
+1. **Build** - Creates Docker images
+2. **Test** - Runs tests to catch bugs
+3. **Scan** - Trivy checks for vulnerabilities
+4. **SBOM** - Generates software bill of materials
+5. **Push** - Uploads images to ECR
+6. **Deploy** - ArgoCD automatically deploys to Kubernetes
+
+The pipeline uploads SBOM and scan results to S3 for tracking.
+
+---
+
+### Step 4: GitOps with ArgoCD 🎯
+
+Configured ArgoCD to watch my Git repository:
+
+- Any change I push to Git automatically updates the cluster
+- ArgoCD syncs the cluster state with what's in Git
+- Easy rollbacks if something breaks
+- Complete audit trail of all changes
+
+---
+
+### Step 5: Kubernetes Deployments 🕸️
+
+Created all the Kubernetes resources:
+
+- **Namespaces** - Isolate resources
+- **Deployments** - Run the services
+- **Services (ClusterIP)** - Internal networking
+- **Ingress** - External access with NGINX
+- **Secrets** - Store sensitive data like DB passwords
+- **ConfigMaps** - Application configuration
+
+---
+
+### Step 6: Monitoring 📊
+
+Set up monitoring stack:
+
+- **Prometheus** - Collects metrics from all services
+- **Grafana** - Beautiful dashboards to visualize everything
+
+Can see in real-time:
+- Request rates and latencies
+- LLM inference times
+- MongoDB performance
+- Cluster health (CPU, memory, pods)
+
+---
+
+### Step 7: Image Signing 🔐
+
+Added security with Cosign:
+
+- Every image gets signed in the CI/CD pipeline
+- Kubernetes verifies signatures before deploying
+- Prevents deployment of tampered or unsigned images
+
+---
+
+### The ECR Token Challenge 🔧
+
+**Problem:** AWS ECR tokens expire every 12 hours. K3s doesn't support IAM roles, so I needed a way to keep credentials fresh.
+
+**Solution:** Created a Kubernetes CronJob that:
+- Runs every 10 hours (before the 12h expiration)
+- Gets a fresh token from AWS
+- Updates the Kubernetes secret
+- Keeps everything working 24/7
+
+Simple but effective!
+
+
+---
+
+## 🚀 Getting Started
+
+### Local Development
+
+```bash
+# Clone the repo
+git clone https://github.com/yourusername/llm-kubernetes-infrastructure.git
+cd llm-kubernetes-infrastructure
+
+# Start services locally
+docker-compose up --build
+
+# Test the API
+curl -X POST http://localhost:8000/api/v1/inference \
+  -H "Content-Type: application/json" \
+  -d '{"prompt": "What is Kubernetes?", "max_length": 100}'
+```
+
+
+
+## 📊 Screenshots
+
+### ArgoCD Dashboard
+*[Add screenshot of ArgoCD showing healthy applications]*
+
+### Grafana Monitoring
+*[Add screenshot of Grafana dashboards]*
+
+### GitHub Actions Pipeline
+*[Add screenshot of successful CI/CD run]*
+
+### Kubernetes Cluster
+*[Add screenshot of running pods]*
+
+---
+
+## 🔒 Security Features
+
+- Container vulnerability scanning with Trivy
+- Image signing with Cosign
+- SBOM generation for compliance
+- Kubernetes secrets for sensitive data
+- Network isolation with VPC
+- IAM least privilege policies
+- Automated security artifact storage in S3
+
+---
+
+## 📈 Monitoring
+
+**What I Track:**
+- API request rate and latency
+- LLM inference time
+- MongoDB operations
+- CPU and memory usage
+- Pod health and restarts
+
+**Tools:**
+- Prometheus for metrics collection
+- Grafana for visualization
+- Custom dashboards for each service
+
+---
+
+## 🎯 What I Learned
+
+- Building production-ready microservices
+- Infrastructure as Code with Terraform
+- Kubernetes orchestration and networking
+- CI/CD pipeline automation
+- GitOps methodology with ArgoCD
+- Container security and image signing
+- Prometheus metrics and Grafana dashboards
+- Problem solving (like the ECR token challenge!)
