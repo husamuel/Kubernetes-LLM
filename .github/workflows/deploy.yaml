@@ -14,18 +14,29 @@ jobs:
       S3_SBOM_BUCKET: sbom-storage-bucket
 
     steps:
-      - name: Checkout code3
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
 
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v2
+      - name: Free disk space
+        run: |
+          sudo rm -rf /usr/local/lib/android || true
+          sudo rm -rf /usr/share/dotnet || true
+          sudo rm -rf /opt/ghc || true
+          sudo docker system prune -af || true
+          sudo rm -rf /tmp/* || true
+
+      - name: Configure Trivy dirs
+        run: |
+          mkdir -p $HOME/.cache/trivy
+          echo "TRIVY_CACHE_DIR=$HOME/.cache/trivy" >> $GITHUB_ENV
+          echo "TMPDIR=$HOME" >> $GITHUB_ENV
+
+      - uses: aws-actions/configure-aws-credentials@v2
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
 
-      - name: Login to Amazon ECR
-        uses: aws-actions/amazon-ecr-login@v2
+      - uses: aws-actions/amazon-ecr-login@v2
 
       - name: Build Gateway Image
         run: docker build -t gateway_image ./gateway
@@ -54,47 +65,44 @@ jobs:
           docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/storage:latest
           docker rmi storage_image
 
-      - name: Trivy Scan Gateway
-        uses: aquasecurity/trivy-action@master
+      - uses: aquasecurity/trivy-action@master
+        name: Trivy Scan Gateway
         with:
           image-ref: ${{ env.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/gateway:latest
           severity: HIGH,CRITICAL
           exit-code: '1'
 
-      - name: Trivy Scan LLM
-        uses: aquasecurity/trivy-action@master
+      - uses: aquasecurity/trivy-action@master
+        name: Trivy Scan LLM
         with:
           image-ref: ${{ env.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/llm:latest
           severity: HIGH,CRITICAL
           exit-code: '1'
 
-      - name: Trivy Scan Storage
-        uses: aquasecurity/trivy-action@master
+      - uses: aquasecurity/trivy-action@master
+        name: Trivy Scan Storage
         with:
           image-ref: ${{ env.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/storage:latest
           severity: HIGH,CRITICAL
           exit-code: '1'
-          artifact-name: gateway-sbom
 
-      - name: Generate SBOM - Gateway
-        uses: anchore/sbom-action@v0
+      - uses: anchore/sbom-action@v0
+        name: Generate SBOM - Gateway
         with:
           image: ${{ env.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/gateway:latest
           output-file: gateway_sbom.json
 
-      - name: Generate SBOM - LLM
-        uses: anchore/sbom-action@v0
+      - uses: anchore/sbom-action@v0
+        name: Generate SBOM - LLM
         with:
           image: ${{ env.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/llm:latest
           output-file: llm_sbom.json
-          artifact-name: llm-sbom
 
-      - name: Generate SBOM - Storage
-        uses: anchore/sbom-action@v0
+      - uses: anchore/sbom-action@v0
+        name: Generate SBOM - Storage
         with:
           image: ${{ env.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/storage:latest
           output-file: storage_sbom.json
-          artifact-name: storage-sbom
 
       - name: Upload SBOMs to S3
         run: |
