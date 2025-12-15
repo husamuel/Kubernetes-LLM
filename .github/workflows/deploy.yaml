@@ -35,8 +35,14 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
-
+          
       - uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Install Cosign
+        uses: sigstore/cosign-installer@v3.6.0
+
+      - name: Prepare Cosign key
+        run: echo "${{ secrets.COSIGN_PRIVATE_KEY }}" > cosign.key
 
       - name: Build Gateway Image
         run: docker build -t gateway_image ./gateway
@@ -46,6 +52,9 @@ jobs:
           docker tag gateway_image:latest $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/gateway:latest
           docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/gateway:latest
           docker rmi gateway_image
+      
+      - name: Sign gateway image
+        run: cosign sign --key cosign.key $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/gateway:latest
 
       - name: Build LLM Image
         run: docker build -t llm_image ./llm
@@ -55,6 +64,9 @@ jobs:
           docker tag llm_image:latest $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/llm:latest
           docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/llm:latest
           docker rmi llm_image
+      
+      - name: Sign llm image
+        run: cosign sign --key cosign.key $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/llm:latest
 
       - name: Build Storage Image
         run: docker build -t storage_image ./storage
@@ -64,6 +76,9 @@ jobs:
           docker tag storage_image:latest $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/storage:latest
           docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/storage:latest
           docker rmi storage_image
+      
+      - name: Sign storage image
+        run: cosign sign --key cosign.key $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/storage:latest
 
       - uses: aquasecurity/trivy-action@master
         name: Trivy Scan Gateway
@@ -109,3 +124,6 @@ jobs:
           aws s3 cp gateway_sbom.json s3://$S3_SBOM_BUCKET/sbom/gateway_sbom.json
           aws s3 cp llm_sbom.json s3://$S3_SBOM_BUCKET/sbom/llm_sbom.json
           aws s3 cp storage_sbom.json s3://$S3_SBOM_BUCKET/sbom/storage_sbom.json
+
+      - name: Cleanup Cosign key
+        run: rm -f cosign.key
