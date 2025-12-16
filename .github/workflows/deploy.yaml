@@ -16,6 +16,11 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
+      - name: Scannig the repository with Gitleaks
+        uses: zricethezav/gitleaks-action@v2
+        with:
+          args: detect --source . --report-format json --report-path gitleaks-report.json
+
       - name: Free disk space
         run: |
           sudo rm -rf /usr/local/lib/android || true
