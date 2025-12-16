@@ -15,14 +15,12 @@ A microservices infrastructure for a serving Large Language Model with automated
 - [Overview](#overview)
 - [Architecture](#architecture)
 - [Tech Stack](#tech-stack)
-- [How I Built This](#how-i-built-this)
-- [Features](#features)
+- [How I Built](#how-i-built)
 - [Getting Started](#getting-started)
-- [Screenshots](#screenshots)
 
 ---
 
-## 🎯 Overview
+## Overview
 
 This project implements a complete infrastructure for serving Large Language Models using microservices. The system handles LLM inference requests through an API Gateway, processes them with GPT-2 Medium, and automatically stores all interactions in MongoDB.
 
@@ -36,7 +34,7 @@ Everything runs on Kubernetes (K3s), with full CI/CD automation, security scanni
 
 ---
 
-## 🏗️ Architecture
+## Architecture
 
 ```
 Client Request
@@ -79,6 +77,8 @@ Client Request
 - Grafana - Dashboards
 
 ---
+
+## How I Built
 
 ## 🚀 Getting Started
 
