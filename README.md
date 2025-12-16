@@ -1,4 +1,4 @@
-# 🤖 LLM Kubernetes Infrastructure
+# LLM Kubernetes Infrastructure
 
 A production-ready microservices infrastructure for serving Large Language Models with automated CI/CD, security scanning, and comprehensive monitoring. Built with Kubernetes, AWS, and modern DevOps practices.
 
