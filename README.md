@@ -70,6 +70,7 @@ Client Request
 - GitHub Actions - CI/CD Pipeline
 - ArgoCD - GitOps Deployment
 - Trivy - Vulnerability Scanning
+- Anchore - SBOM Reports
 - Cosign - Image Signing
 
 **Monitoring:**
