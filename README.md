@@ -1,6 +1,6 @@
 # LLM Kubernetes Infrastructure
 
-A microservices infrastructure for a serving Large Language Model with automated CI with Github Actions, CD and GitOps practises with Argocd, security scanning, monitoring. Built with Kubernetes, AWS, and modern DevOps practices.
+A microservices infrastructure for a serving Large Language Model with automated CI with Github Actions, CD and GitOps practises with Argocd, security scanning, monitoring. Built with Kubernetes, AWS, and DevOps practices.
 
 [![Kubernetes](https://img.shields.io/badge/Kubernetes-326CE5?style=for-the-badge&logo=kubernetes&logoColor=white)](https://kubernetes.io/)
 [![AWS](https://img.shields.io/badge/AWS-FF9900?style=for-the-badge&logo=amazon-aws&logoColor=white)](https://aws.amazon.com/)
