@@ -8,7 +8,6 @@ A microservices infrastructure for serving Large Language Models with automated 
 [![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://www.docker.com/)
 [![ArgoCD](https://img.shields.io/badge/ArgoCD-EF7B4D?style=for-the-badge&logo=argo&logoColor=white)](https://argoproj.github.io/cd/)
 
----
 
 ## 📋 Table of Contents
 
@@ -18,7 +17,7 @@ A microservices infrastructure for serving Large Language Models with automated 
 - [How I Built](#how-i-built)
 - [Getting Started](#getting-started)
 
----
+
 
 ## Overview
 
@@ -32,14 +31,12 @@ This project implements a complete infrastructure for serving Large Language Mod
 
 Everything runs on Kubernetes (K3s), with full CI/CD automation, security scanning, and monitoring.
 
----
 
 ## Architecture
 
 
----
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 **Application:**
 - FastAPI (Python) - API Gateway & Services
@@ -65,7 +62,6 @@ Everything runs on Kubernetes (K3s), with full CI/CD automation, security scanni
 - Prometheus - Metrics Collection
 - Grafana - Dashboards & Visualization
 
----
 
 ## How I Built This
 
@@ -73,7 +69,7 @@ Everything runs on Kubernetes (K3s), with full CI/CD automation, security scanni
 
 I didn't want to use my personal computer or pay for cloud services, so I grabbed an old computer I had at home, installed Ubuntu Server on it (headless to save resources), and turned it into my lab environment. It's been running everything from development to production.
 
-![pc](https://github.com/user-attachments/assets/49ee56b5-c401-4c02-9349-240980679050)
+<img src="https://github.com/user-attachments/assets/49ee56b5-c401-4c02-9349-240980679050" alt="Home Lab Setup" width="600"/>
 
 ### 2. Building the Application
 
@@ -93,7 +89,7 @@ GitHub Actions handles the CI process. Every push triggers a build and push of D
 
 For continuous deployment, ArgoCD watches the Git repository and automatically syncs changes to the cluster. This approach speeds up development significantly - automatic deployments, faster health checks, easier debugging, and proper GitOps practices.
 
-<img width="1898" height="953" alt="screenshot_2025-12-13_11-22-19" src="https://github.com/user-attachments/assets/405f5158-b803-46ee-a4a6-30d075d7af8c" />
+<img src="https://github.com/user-attachments/assets/405f5158-b803-46ee-a4a6-30d075d7af8c" alt="ArgoCD Dashboard" width="800"/>
 
 ### 6. Kubernetes Cluster
 
@@ -107,7 +103,7 @@ Added Kyverno policies to verify image signatures - only signed images can run i
 
 Deployed a monitoring stack using Helm with Prometheus and Grafana. Set up custom dashboards to track resource usage, application performance, and overall cluster health. This visibility was crucial for identifying bottlenecks and optimization opportunities.
 
-<img width="1902" height="967" alt="screenshot_2025-12-13_11-21-51" src="https://github.com/user-attachments/assets/23882531-ca3b-41b7-99ba-d37a48ad5428" />
+<img src="https://github.com/user-attachments/assets/23882531-ca3b-41b7-99ba-d37a48ad5428" alt="Grafana Dashboard" width="800"/>
 
 ### 8. Optimizing Everything
 
@@ -123,7 +119,7 @@ This project demonstrated that you can build production-grade cloud-native infra
 
 ---
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Prerequisites
 
