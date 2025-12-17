@@ -74,11 +74,11 @@ I didn't want to use my personal computer or pay for cloud services, so I grabbe
 
 I went with microservices where each part runs independently and communicates through REST APIs. This made sense because I could scale services separately, deploy them independently, and keep the codebase organized.
 
-The stack is straightforward - Python with FastAPI for the servers, GPT-2 Medium as the LLM, and MongoDB for storage. Each service runs in its own Docker container. The flow works like this: gateway receives a POST to `/generate` with a prompt, processes it as JSON, forwards to the LLM service which generates a response, sends it back to the gateway and then to the client. Meanwhile, it also sends the data to the storage API that persists everything in MongoDB.
+The stack is straightforward, Python with FastAPI for the servers, GPT-2 Medium as the LLM, and MongoDB for storage. Each service runs in its own Docker container. The flow works like this: gateway receives a POST to `/generate` with a prompt, processes it as JSON, forwards to the LLM service which generates a response, sends it back to the gateway and then to the client. Meanwhile, it also sends the data to the storage API that persists everything in MongoDB.
 
 ### 3. Container Registry and Infrastructure
 
-After containerizing the services, I needed somewhere to store the images. Used AWS ECR and provisioned everything with Terraform - ECR repositories for each service, S3 buckets for SBOM reports, VPC, and IAM roles with proper policies. Infrastructure as code lets me version everything, reproduce it easily, and track all changes.
+After containerizing the services, I needed somewhere to store the images. Used AWS ECR and provisioned everything with Terraform, ECR repositories for each service, S3 buckets for SBOM reports, VPC, and IAM roles with proper policies. Infrastructure as code lets me version everything, reproduce it easily, and track all changes.
 
 ### 4. CI Pipeline
 
@@ -86,7 +86,7 @@ GitHub Actions handles the CI process. Every push triggers a build and push of D
 
 ### 5. CD with ArgoCD
 
-For continuous deployment, ArgoCD watches the Git repository and automatically syncs changes to the cluster. This approach speeds up development significantly - automatic deployments, faster health checks, easier debugging, and proper GitOps practices.
+For continuous deployment, ArgoCD watches the Git repository and automatically syncs changes to the cluster. This approach speeds up development significantly, automatic deployments, faster health checks, easier debugging, and proper GitOps practices.
 
 <img src="https://github.com/user-attachments/assets/405f5158-b803-46ee-a4a6-30d075d7af8c" alt="ArgoCD Dashboard" width="800"/>
 
@@ -96,7 +96,7 @@ Originally wanted to use EKS Anywhere but it requires 16GB RAM minimum. My machi
 
 Organized the cluster into namespaces: `argocd`, `gateway`, `monitoring`, `llm`, `storage`, `kyverno`, and `ingress-nginx`. The gateway uses Ingress NGINX to expose the application externally, ClusterIP services handle internal pod communication, and I configured horizontal pod autoscaling for the APIs and LLM based on resource usage. MongoDB runs as a StatefulSet with vertical scaling for data persistence.
 
-Added Kyverno policies to verify image signatures - only signed images can run in the cluster. One challenge with ECR is token expiration, so I wrote a cronjob that runs every 10 hours to generate new authentication tokens and update the Kubernetes secrets automatically.
+Added Kyverno policies to verify image signatures, only signed images can run in the cluster. One challenge with ECR is token expiration, so I wrote a cronjob that runs every 10 hours to generate new authentication tokens and update the Kubernetes secrets automatically.
 
 ### 7. Monitoring
 
