@@ -31,7 +31,9 @@ This project implements a complete infrastructure for serving Large Language Mod
 
 Everything runs on Kubernetes (K3s), with full CI/CD automation, security scanning, and monitoring.
 
+## Architecture
 
+<img width="700" alt="screenshot_2025-12-17_14-45-25" src="https://github.com/user-attachments/assets/64ba2bf2-c91a-4cd3-bbc5-a9d4e438a0ca" />
 
 ## Tech Stack
 
