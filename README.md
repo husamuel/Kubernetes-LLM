@@ -72,7 +72,7 @@ I didn't want to use my personal computer or pay for cloud services, so I grabbe
 
 ### 2. Building the Application
 
-I went with microservices where each part runs independently and communicates through REST APIs. This made sense because I could scale services separately, deploy them independently, and keep the codebase organized.
+I went with modular architecture inspired in microservices where each part runs independently and communicates through REST APIs. This made sense because I could scale services separately, deploy them independently, and keep the codebase organized.
 
 The stack is straightforward, Python with FastAPI for the servers, GPT-2 Medium as the LLM, and MongoDB for storage. Each service runs in its own Docker container. The flow works like this: gateway receives a POST to `/generate` with a prompt, processes it as JSON, forwards to the LLM service which generates a response, sends it back to the gateway and then to the client. Meanwhile, it also sends the data to the storage API that persists everything in MongoDB.
 
